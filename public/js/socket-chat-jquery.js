@@ -99,9 +99,10 @@ divUsuers.on('click', 'a', function() {
 function getUser(list) {
 
     let y = list[0].split(":")
-    let username = y[1]
-    let found, id
+    let usr = y[1]
+    let username = ''
 
+    username = usr.replace('+', ' ')
     for (let i = 0; i < usersList.length; i++) {
         if (usersList[i].name == username) {
             return usersList[i]
@@ -118,18 +119,18 @@ formSend.on('submit', function(e) {
     if (txtMessage.val().trim().length === 0) {
         return
     }
-
-    let x = txtMessage.val().split(" ")
-
-    if (x[0].match("private:\\w+")) {
+    message = txtMessage.val()
+    let x = message.split(" ")
+    if (x[0].match("private:.+")) {
         console.log("PRIVADO")
-        let newMessage = "Private Message : " + txtMessage.val()
+        message = message.replace(x[0], '')
+        let newMessage = "Private Message : " + message
         let userData = getUser(x)
 
         if (userData) {
-            console.log("fdsf")
+            console.log(userData.id)
             socket.emit('privateMessage', {
-                message: txtMessage.val(),
+                message: newMessage,
                 to: userData.id
             }, function(message) {
                 txtMessage.val('').focus()
