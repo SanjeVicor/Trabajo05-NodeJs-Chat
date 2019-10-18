@@ -5,14 +5,33 @@ const users = new Users()
 
 io.on('connection', (client) => {
 
-    client.on('enterChat', (user, callback) => {
-        //console.log(user);
+
+
+    client.on('enterChat', async(user, callback) => {
+        console.log(users.getAllUsers());
+
+        x = users.getAllUsers()
+        let error = false
+        await x.forEach(element => {
+            if (element.name == user.name) {
+                error = true
+            }
+        });
+
+        if (error) {
+            return callback({
+                error: true,
+                message: 'Name is already used'
+            });
+        }
+
         if (!user.name || !user.chatRoom) {
             return callback({
                 error: true,
                 message: 'Name/chatRoom are necessary'
             });
         }
+
 
         client.join(user.chatRoom);
         users.addUser(client.id, user.name, user.chatRoom);
@@ -48,9 +67,12 @@ io.on('connection', (client) => {
     });
 
     //Mensajes privados
-    client.on('privateMessage', data => {
+    client.on('privateMessage', (data, callback) => {
         let fromUsr = users.getUser(client.id);
-        client.broadcast.to(data.to).emit('privateMessage', createMessage(fromUsr.name, data.message));
+        let message = createMessage(fromUsr.name, data.message);
+        client.broadcast.to(data.to).emit('privateMessage', message);
+        if (callback)
+            callback(message)
     });
 
 });

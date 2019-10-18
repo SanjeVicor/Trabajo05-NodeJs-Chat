@@ -6,11 +6,12 @@ var divUsuers = $('#divUsuarios');
 var formSend = $('#formEnviar');
 var txtMessage = $('#txtMensaje');
 var divChatbox = $('#divChatbox')
-
-///Funciones para renderizar usuarios
+let usersList = []
+    ///Funciones para renderizar usuarios
 
 function renderingUsers(users) { //[{},{},{}]
     console.log(users);
+    usersList = users
     var html = '';
 
     html += '<li>';
@@ -94,19 +95,57 @@ divUsuers.on('click', 'a', function() {
     }
 })
 
+
+function getUser(list) {
+
+    let y = list[0].split(":")
+    let username = y[1]
+    let found, id
+
+    for (let i = 0; i < usersList.length; i++) {
+        if (usersList[i].name == username) {
+            return usersList[i]
+        }
+    }
+
+    return false
+
+
+}
+
 formSend.on('submit', function(e) {
     e.preventDefault();
     if (txtMessage.val().trim().length === 0) {
         return
     }
 
-    socket.emit('newMessage', {
-        name: userName,
-        message: txtMessage.val()
-    }, function(message) {
-        txtMessage.val('').focus()
-        renderingMessages(message, true)
-        scrollBottom()
-    });
+    let x = txtMessage.val().split(" ")
 
-})
+    if (x[0].match("private:\\w+")) {
+        console.log("PRIVADO")
+        let newMessage = "Private Message : " + txtMessage.val()
+        let userData = getUser(x)
+
+        if (userData) {
+            console.log("fdsf")
+            socket.emit('privateMessage', {
+                message: txtMessage.val(),
+                to: userData.id
+            }, function(message) {
+                txtMessage.val('').focus()
+                renderingMessages(message, true)
+                scrollBottom()
+            });
+        }
+    } else {
+
+        socket.emit('newMessage', {
+            name: userName,
+            message: txtMessage.val()
+        }, function(message) {
+            txtMessage.val('').focus()
+            renderingMessages(message, true)
+            scrollBottom()
+        });
+    }
+});

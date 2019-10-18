@@ -23,6 +23,11 @@ socket.on('connect', function() {
 
     socket.emit('enterChat', user, function(resp) {
         console.log('Active Users \n', resp);
+        if (resp.error) {
+            window.location = 'index.html';
+            alert(resp.message)
+            throw new Error(resp.message);
+        }
         renderingUsers(resp)
     });
 });
@@ -45,4 +50,6 @@ socket.on('newMessage', function(resp) {
 //Mensaje privado
 socket.on('privateMessage', function(message) {
     console.log('PRIVATE MESSAGE : ', message);
+    renderingMessages(message, false)
+    scrollBottom()
 })
